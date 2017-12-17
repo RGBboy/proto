@@ -1,10 +1,13 @@
 module Main exposing (main)
 
 import AnimationFrame
+import Element as El
+import Element.Attributes as A
 import Html exposing (Html)
-import Html.Attributes exposing (width, height, style)
+import Html.Attributes exposing (width, height)
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (vec3, Vec3)
+import Style exposing (StyleSheet)
 import Time exposing (Time)
 import WebGL exposing (Mesh, Shader)
 
@@ -51,42 +54,52 @@ subscriptions _ = AnimationFrame.diffs identity
 
 -- VIEW
 
+stylesheet : StyleSheet () variation
+stylesheet =
+  Style.styleSheet
+    [ Style.style () [] ]
+
 view : Time -> Html msg
 view t =
-    WebGL.toHtml
-        [ width 400
-        , height 400
-        , style [ ( "display", "block" ) ]
+  let
+    content =
+      El.html <|
+        ( WebGL.toHtml
+            [ width 320
+            , height 320
+            ]
+            [ WebGL.entity
+                vertexShader
+                fragmentShader
+                mesh
+                { time = t / 1000 }
+            ]
+        )
+  in
+    El.layout stylesheet <|
+      El.el ()
+        [ A.center
+        , A.verticalCenter
+        , A.width A.content
+        , A.height A.content
         ]
-        [ WebGL.entity
-            vertexShader
-            fragmentShader
-            mesh
-            { time = t / 1000 }
-        ]
-
-
-perspective : Float -> Mat4
-perspective t =
-  Mat4.makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+        content
 
 
 
 -- MESH
-
 
 type alias Vertex =
   { position : Vec3
   , color : Vec3
   }
 
-
 mesh : Mesh Vertex
 mesh =
   WebGL.triangles
-    [ ( Vertex (vec3 -2.5 -0.5 0) (vec3 1 0 0)
-      , Vertex (vec3 0.5 2.5 0) (vec3 0 1 0)
-      , Vertex (vec3 0.5 -0.5 0) (vec3 0 0 1)
+    [ ( Vertex (vec3 -3 -1 0) (vec3 1 0 0)
+      , Vertex (vec3 1 3 0) (vec3 0 1 0)
+      , Vertex (vec3 1 -1 0) (vec3 0 0 1)
       )
     ]
 
@@ -94,10 +107,8 @@ mesh =
 
 -- SHADERS
 
-
 type alias Uniforms =
   { time : Float }
-
 
 vertexShader : Shader Vertex Uniforms { vcolor : Vec3, vtime : Float }
 vertexShader =
@@ -117,7 +128,6 @@ vertexShader =
 
   |]
 
-
 fragmentShader : Shader {} Uniforms { vcolor : Vec3, vtime : Float }
 fragmentShader =
   [glsl|
@@ -127,7 +137,7 @@ fragmentShader =
     varying float vtime;
 
     void main () {
-      gl_FragColor = vec4(vcolor, 1.0) * sin(vtime);
+      gl_FragColor = vec4(vcolor * sin(vtime * 4.0), 1.0);
     }
 
   |]

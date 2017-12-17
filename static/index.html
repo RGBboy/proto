@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Proto</title>
+    <meta name="description" content="Proto">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+    <style>
+    html, body, #mount, .style-elements {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+  </style>
+  </head>
+  <body>
+    <div id="mount"></div>
+    <script src="index.js"></script>
+    <script>
+      Elm.Main.embed(document.getElementById('mount'));
+    </script>
+  </body>
+</html>
