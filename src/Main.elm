@@ -5,15 +5,18 @@ import Element as El
 import Element.Attributes as A
 import Html exposing (Html)
 import Html.Attributes exposing (width, height)
+import Http
 import Math.Matrix4 as Mat4 exposing (Mat4)
 import Math.Vector3 as Vec3 exposing (vec3, Vec3)
+import Result
 import Style exposing (StyleSheet)
+import Task
 import Time exposing (Time)
 import WebGL exposing (Mesh, Shader)
 
 
 
-main : Program Never Time Time
+main : Program Never Model Msg
 main =
   Html.program
     { init = init
@@ -26,29 +29,70 @@ main =
 
 -- MODEL
 
-type alias Model = Time
+type alias Uniforms =
+  { time : Float }
 
-init : (Model, Cmd msg)
-init = (0, Cmd.none)
+type alias VertexShader =
+  Shader Vertex Uniforms { vpos : Vec2, vtime : Float }
+
+type alias FragmentShader =
+  Shader {} Uniforms { vpos : Vec2, vtime : Float }
+
+type alias Model =
+  { time : Time
+  , shaders : Maybe (VertexShader, FragmentShader)
+  }
+
+loadShaders : Cmd Msg
+loadShaders =
+  let
+    fragmentRequest = Http.getString "./fragment.glsl"
+      |> Http.toTask
+      |> Task.map (WebGL.unsafeShader)
+    vertexRequest = Http.getString "./vertex.glsl"
+      |> Http.toTask
+      |> Task.map (WebGL.unsafeShader)
+  in
+    Task.map2 (,) vertexRequest fragmentRequest
+      |> Task.attempt ((Result.map Load) >> (Result.withDefault None))
+
+init : (Model, Cmd Msg)
+init =
+  ( { time = 0
+    , shaders = Nothing
+    }
+  , loadShaders
+  )
 
 
 
 -- UPDATE
 
-type alias Msg = Time
+type Msg
+  = Tick Time
+  | Load (VertexShader, FragmentShader)
+  | None
 
 update : Msg -> Model -> (Model, Cmd msg)
-update elapsed currentTime =
-  ( elapsed + currentTime
-  , Cmd.none
-  )
+update message model =
+  case message of
+    Tick dt ->
+      ( { model | time = dt + model.time }
+      , Cmd.none
+      )
+    Load shaders ->
+      ( { model | shaders = Just shaders }
+      , Cmd.none
+      )
+    None -> (model, Cmd.none)
 
 
 
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
-subscriptions _ = AnimationFrame.diffs identity
+subscriptions _ =
+  AnimationFrame.diffs Tick
 
 
 
@@ -59,31 +103,36 @@ stylesheet =
   Style.styleSheet
     [ Style.style () [] ]
 
-view : Time -> Html msg
-view t =
+entity : Time -> (VertexShader, FragmentShader) -> El.Element () variation msg
+entity time (vertexShader, fragmentShader) =
+  El.html <|
+    WebGL.toHtml
+      [ width 320
+      , height 320
+      ]
+      [ WebGL.entity
+          vertexShader
+          fragmentShader
+          mesh
+          { time = time / 1000 }
+      ]
+
+view : Model -> Html msg
+view { time, shaders } =
   let
     content =
-      El.html <|
-        ( WebGL.toHtml
-            [ width 320
-            , height 320
-            ]
-            [ WebGL.entity
-                vertexShader
-                fragmentShader
-                mesh
-                { time = t / 1000 }
-            ]
-        )
+      Maybe.map (entity time) shaders
+        |> Maybe.withDefault El.empty
   in
-    El.layout stylesheet <|
-      El.el ()
-        [ A.center
-        , A.verticalCenter
-        , A.width A.content
-        , A.height A.content
-        ]
-        content
+    -- need to add margin auto to flex item to make overflow on small screens work
+    El.layout stylesheet
+      <| El.el ()
+          [ A.center
+          , A.verticalCenter
+          , A.width A.content
+          , A.height A.content
+          ]
+          content
 
 
 
@@ -107,37 +156,36 @@ mesh =
 
 -- SHADERS
 
-type alias Uniforms =
-  { time : Float }
 
-vertexShader : Shader Vertex Uniforms { vcolor : Vec3, vtime : Float }
-vertexShader =
-  [glsl|
 
-    attribute vec3 position;
-    attribute vec3 color;
-    uniform float time;
-    varying vec3 vcolor;
-    varying float vtime;
+-- vertexShader : Shader Vertex Uniforms { vcolor : Vec3, vtime : Float }
+-- vertexShader =
+--   [glsl|
+--
+--     attribute vec3 position;
+--     attribute vec3 color;
+--     uniform float time;
+--     varying vec3 vcolor;
+--     varying float vtime;
+--
+--     void main () {
+--       gl_Position = vec4(position, 1.0);
+--       vcolor = color;
+--       vtime = time;
+--     }
+--
+--   |]
 
-    void main () {
-      gl_Position = vec4(position, 1.0);
-      vcolor = color;
-      vtime = time;
-    }
-
-  |]
-
-fragmentShader : Shader {} Uniforms { vcolor : Vec3, vtime : Float }
-fragmentShader =
-  [glsl|
-
-    precision mediump float;
-    varying vec3 vcolor;
-    varying float vtime;
-
-    void main () {
-      gl_FragColor = vec4(vcolor * sin(vtime * 4.0), 1.0);
-    }
-
-  |]
+-- fragmentShader : FragmentShader
+-- fragmentShader =
+--   [glsl|
+--
+--     precision mediump float;
+--     varying vec3 vcolor;
+--     varying float vtime;
+--
+--     void main () {
+--       gl_FragColor = vec4(vcolor, 1.0);
+--     }
+--
+--   |]

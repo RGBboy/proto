@@ -5,15 +5,19 @@
   "description": "",
   "author": "RGBboy",
   "scripts": {
-    "dev": "ecstatic ./static --port 9966 & chokidar 'src/*.elm' -c 'npm run build:client'",
+    "dev": "ecstatic ./static --port 9966 & chokidar 'src/*.elm' -c 'npm run build:client' & chokidar 'src/*.glsl' -c 'npm run build:shader'",
     "build:client": "elm-make ./src/Main.elm --output ./static/index.js",
+    "build:shader": "glslify ./src/vertex.glsl --output ./static/vertex.glsl && glslify ./src/fragment.glsl --output ./static/fragment.glsl",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {},
+  "dependencies": {
+    "glsl-noise": "0.0.0"
+  },
   "devDependencies": {
     "chokidar-cli": "^1.2.0",
     "ecstatic": "^3.1.1",
-    "elm": "^0.18.0"
+    "elm": "^0.18.0",
+    "glslify": "^6.1.0"
   },
   "license": "NO LICENCE"
 }
