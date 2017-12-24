@@ -124,15 +124,23 @@ view { time, shaders } =
       Maybe.map (entity time) shaders
         |> Maybe.withDefault El.empty
   in
-    -- need to add margin auto to flex item to make overflow on small screens work
     El.layout stylesheet
-      <| El.el ()
+      <| El.row ()
           [ A.center
           , A.verticalCenter
-          , A.width A.content
-          , A.height A.content
+          , A.width A.fill
+          , A.height A.fill
           ]
-          content
+          [ El.el ()
+              [ A.width (A.px 320)
+              , A.height (A.px 320)
+              , A.inlineStyle
+                  [ ( "background", "#DDDDDD" )
+                  , ( "margin", "auto" )
+                  ]
+              ]
+              content
+          ]
 
 
 
