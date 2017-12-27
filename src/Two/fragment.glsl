@@ -1,8 +1,11 @@
-precision mediump float;
+#extension GL_OES_standard_derivatives : enable
+precision highp float;
 
-uniform float shade;
-varying vec3 vcolor;
+#pragma glslify: faceNormals = require('glsl-face-normal')
 
-void main () {
-  gl_FragColor = shade * vec4(vcolor, 1.0);
+varying vec3 vViewPosition;
+
+void main() {
+  vec3 normal = faceNormals(vViewPosition);
+  gl_FragColor = vec4(normal.z, normal.z, normal.z, 1.0);
 }

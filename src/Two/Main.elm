@@ -26,26 +26,14 @@ import WebGL exposing (Mesh, Shader)
 -- MODEL
 
 type alias Vertex =
-  { color : Vec3
-  , position : Vec3
+  { position : Vec3
   }
 
-face : Color -> Vec3 -> Vec3 -> Vec3 -> Vec3 -> List (Vertex, Vertex, Vertex)
-face rawColor a b c d =
-  let
-    color =
-      let c = Color.toRgb rawColor in
-      vec3
-          (toFloat c.red / 255)
-          (toFloat c.green / 255)
-          (toFloat c.blue / 255)
-
-    vertex position =
-        Vertex color position
-  in
-    [ (vertex a, vertex b, vertex c)
-    , (vertex c, vertex d, vertex a)
-    ]
+face : Vec3 -> Vec3 -> Vec3 -> Vec3 -> List (Vertex, Vertex, Vertex)
+face a b c d =
+  [ (Vertex a, Vertex b, Vertex c)
+  , (Vertex c, Vertex d, Vertex a)
+  ]
 
 cube : Mesh Vertex
 cube =
@@ -60,34 +48,32 @@ cube =
     lbb = vec3 -1 -1 -1
   in
     WebGL.triangles <| List.concat <|
-      [ face Color.green  rft rfb rbb rbt   -- right
-      , face Color.blue   rft rfb lfb lft   -- front
-      , face Color.yellow rft lft lbt rbt   -- top
-      , face Color.red    rfb lfb lbb rbb   -- bottom
-      , face Color.purple lft lfb lbb lbt   -- left
-      , face Color.orange rbt rbb lbb lbt   -- back
+      [ face rft rfb rbb rbt   -- right
+      , face rft rfb lfb lft   -- front
+      , face rft lft lbt rbt   -- top
+      , face rfb lfb lbb rbb   -- bottom
+      , face lft lfb lbb lbt   -- left
+      , face rbt rbb lbb lbt   -- back
       ]
 
 type alias Uniforms =
-  { rotation : Mat4
-  , perspective : Mat4
-  , camera:Mat4
-  , shade:Float
+  { projection : Mat4
+  , view : Mat4
+  , model : Mat4
   }
 
 uniforms : Time -> Uniforms
 uniforms t =
-  { rotation = Mat4.mul (Mat4.makeRotate (3 * t) (vec3 0 1 0)) (Mat4.makeRotate (2 * t) (vec3 1 0 0))
-  , perspective = Mat4.makePerspective 45 1 0.01 100
-  , camera = Mat4.makeLookAt (vec3 0 0 5) (vec3 0 0 0) (vec3 0 1 0)
-  , shade = 0.8
+  { projection = Mat4.makePerspective 45 1 0.01 100
+  , view = Mat4.makeLookAt (vec3 0 0 5) (vec3 0 0 0) (vec3 0 1 0)
+  , model = Mat4.mul (Mat4.makeRotate (3 * t) (vec3 0 1 0)) (Mat4.makeRotate (2 * t) (vec3 1 0 0))
   }
 
 type alias VertexShader =
-  Shader Vertex Uniforms { vcolor : Vec3 }
+  Shader Vertex Uniforms { vViewPosition : Vec3 }
 
 type alias FragmentShader =
-  Shader {} Uniforms { vcolor : Vec3 }
+  Shader {} Uniforms { vViewPosition : Vec3 }
 
 type alias Model =
   { time : Time

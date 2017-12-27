@@ -1,11 +1,17 @@
 attribute vec3 position;
-attribute vec3 color;
-uniform mat4 perspective;
-uniform mat4 camera;
-uniform mat4 rotation;
-varying vec3 vcolor;
 
-void main () {
-  gl_Position = perspective * camera * rotation * vec4(position, 1.0);
-  vcolor = color;
+uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
+
+varying vec3 vViewPosition;
+
+void main() {
+
+  mat4 modelViewMatrix = view * model;
+  vec4 viewModelPosition = modelViewMatrix * vec4(position, 1.0);
+
+  vViewPosition = viewModelPosition.xyz;
+
+  gl_Position = projection * viewModelPosition;
 }
