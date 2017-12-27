@@ -5,7 +5,7 @@
   "description": "",
   "author": "RGBboy",
   "scripts": {
-    "dev": "ecstatic ./static --port 9966 & chokidar 'src/*.elm' -c 'npm run build:client' & chokidar 'src/*.glsl' -c 'npm run build:shader'",
+    "dev": "ecstatic ./static --port 9966 & chokidar 'src/**/*.elm' -c 'npm run build:client' & chokidar 'src/**/*.glsl' -c 'npm run build:shader'",
     "build:client": "elm-make ./src/Main.elm --output ./static/index.js",
     "build:shader": "find ./src -name *.glsl | cut -d'/' -f3- | while read file; do mkdir -p \"$(dirname \"./static/$file\")\" && glslify ./src/$file > ./static/$file; done",
     "test": "echo \"Error: no test specified\" && exit 1"

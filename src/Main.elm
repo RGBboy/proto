@@ -1,17 +1,10 @@
 module Main exposing (main)
 
-import AnimationFrame
 import Element as El
 import Element.Attributes as A
 import Html exposing (Html)
-import Html.Attributes exposing (width, height)
-import Http
-import Math.Vector2 as Vec2 exposing (vec2, Vec2)
-import Result
 import Style exposing (StyleSheet)
-import Task
-import Time exposing (Time)
-import WebGL exposing (Mesh, Shader)
+import One.Main as One
 
 
 
@@ -28,52 +21,18 @@ main =
 
 -- MODEL
 
-type alias Vertex =
-  { position : Vec2
-  }
-
-mesh : Mesh Vertex
-mesh =
-  WebGL.triangles
-    [ ( Vertex (vec2 -3 -1)
-      , Vertex (vec2 1 3)
-      , Vertex (vec2 1 -1)
-      )
-    ]
-
-type alias Uniforms =
-  { time : Float }
-
-type alias VertexShader =
-  Shader Vertex Uniforms { vpos : Vec2, vtime : Float }
-
-type alias FragmentShader =
-  Shader {} Uniforms { vpos : Vec2, vtime : Float }
-
 type alias Model =
-  { time : Time
-  , shaders : Maybe (VertexShader, FragmentShader)
+  { one : One.Model
   }
-
-loadShaders : Cmd Msg
-loadShaders =
-  let
-    fragmentRequest = Http.getString "./fragment.glsl"
-      |> Http.toTask
-      |> Task.map (WebGL.unsafeShader)
-    vertexRequest = Http.getString "./vertex.glsl"
-      |> Http.toTask
-      |> Task.map (WebGL.unsafeShader)
-  in
-    Task.map2 (,) vertexRequest fragmentRequest
-      |> Task.attempt ((Result.map Load) >> (Result.withDefault None))
 
 init : (Model, Cmd Msg)
 init =
-  ( { time = 0
-    , shaders = Nothing
+  let
+    (one, command) = One.init
+  in
+  ( { one = one
     }
-  , loadShaders
+  , Cmd.map OneMessage command
   )
 
 
@@ -81,30 +40,26 @@ init =
 -- UPDATE
 
 type Msg
-  = Tick Time
-  | Load (VertexShader, FragmentShader)
-  | None
+  = OneMessage One.Msg
 
-update : Msg -> Model -> (Model, Cmd msg)
-update message model =
-  case message of
-    Tick dt ->
-      ( { model | time = dt + model.time }
-      , Cmd.none
-      )
-    Load shaders ->
-      ( { model | shaders = Just shaders }
-      , Cmd.none
-      )
-    None -> (model, Cmd.none)
+update : Msg -> Model -> (Model, Cmd Msg)
+update (OneMessage message) model =
+  let
+    (one, command) = One.update message model.one
+  in
+    ( { model | one = one
+      }
+    , Cmd.map OneMessage command
+    )
 
 
 
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-  AnimationFrame.diffs Tick
+subscriptions model =
+  One.subscriptions model.one
+    |> Sub.map OneMessage
 
 
 
@@ -115,26 +70,11 @@ stylesheet =
   Style.styleSheet
     [ Style.style () [] ]
 
-entity : Time -> (VertexShader, FragmentShader) -> El.Element () variation msg
-entity time (vertexShader, fragmentShader) =
-  El.html <|
-    WebGL.toHtml
-      [ width 320
-      , height 320
-      ]
-      [ WebGL.entity
-          vertexShader
-          fragmentShader
-          mesh
-          { time = time / 1000 }
-      ]
-
 view : Model -> Html msg
-view { time, shaders } =
+view model =
   let
     content =
-      Maybe.map (entity time) shaders
-        |> Maybe.withDefault El.empty
+      One.view model.one
   in
     El.layout stylesheet
       <| El.row ()
