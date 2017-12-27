@@ -5,6 +5,7 @@ import Element.Attributes as A
 import Html exposing (Html)
 import Style exposing (StyleSheet)
 import One.Main as One
+import Two.Main as Two
 
 
 
@@ -23,16 +24,22 @@ main =
 
 type alias Model =
   { one : One.Model
+  , two : Two.Model
   }
 
 init : (Model, Cmd Msg)
 init =
   let
-    (one, command) = One.init
+    (oneModel, oneCmd) = One.init
+    (twoModel, twoCmd) = Two.init
   in
-  ( { one = one
+  ( { one = oneModel
+    , two = twoModel
     }
-  , Cmd.map OneMessage command
+  , Cmd.batch
+    [ Cmd.map OneMessage oneCmd
+    , Cmd.map TwoMessage twoCmd
+    ]
   )
 
 
@@ -41,16 +48,27 @@ init =
 
 type Msg
   = OneMessage One.Msg
+  | TwoMessage Two.Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update (OneMessage message) model =
-  let
-    (one, command) = One.update message model.one
-  in
-    ( { model | one = one
-      }
-    , Cmd.map OneMessage command
-    )
+update message model =
+  case message of
+    OneMessage message ->
+      let
+        (oneModel, oneCmd) = One.update message model.one
+      in
+        ( { model | one = oneModel
+          }
+        , Cmd.map OneMessage oneCmd
+        )
+    TwoMessage message ->
+      let
+        (twoModel, twoCmd) = Two.update message model.two
+      in
+        ( { model | two = twoModel
+          }
+        , Cmd.map OneMessage twoCmd
+        )
 
 
 
@@ -58,8 +76,10 @@ update (OneMessage message) model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  One.subscriptions model.one
-    |> Sub.map OneMessage
+  Sub.batch
+    [ Sub.map OneMessage <| One.subscriptions model.one
+    , Sub.map TwoMessage <| Two.subscriptions model.two
+    ]
 
 
 
@@ -70,26 +90,34 @@ stylesheet =
   Style.styleSheet
     [ Style.style () [] ]
 
+item : El.Element () variation msg -> El.Element () variation msg
+item content =
+  El.el ()
+      [ A.width (320 |> A.px)
+      , A.height (320 |> A.px)
+      , A.inlineStyle
+          [ ( "background", "#DDDDDD" )
+          ]
+      ]
+      content
+
 view : Model -> Html msg
 view model =
-  let
-    content =
-      One.view model.one
-  in
-    El.layout stylesheet
-      <| El.row ()
-          [ A.center
-          , A.verticalCenter
-          , A.width A.fill
-          , A.height A.fill
-          ]
-          [ El.el ()
-              [ A.width (A.px 320)
-              , A.height (A.px 320)
-              , A.inlineStyle
-                  [ ( "background", "#DDDDDD" )
-                  , ( "margin", "auto" )
-                  ]
-              ]
-              content
-          ]
+  El.layout stylesheet
+    <| El.row ()
+        [ A.center
+        , A.verticalCenter
+        , A.width A.fill
+        , A.height A.fill
+        ]
+        [ El.column ()
+            [ A.spacingXY 0 32
+            , A.clipY
+            , A.inlineStyle
+                [ ( "margin", "auto" )
+                ]
+            ]
+            [ item <| One.view model.one
+            , item <| Two.view model.two
+            ]
+        ]
