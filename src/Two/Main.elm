@@ -27,33 +27,42 @@ import WebGL exposing (Mesh, Shader)
 
 type alias Vertex =
   { position : Vec3
+  , normal : Vec3
   }
 
+-- Note: Faces must be declared in a clockwise order to calculate the
+-- normal in the correct direction.
 face : Vec3 -> Vec3 -> Vec3 -> Vec3 -> List (Vertex, Vertex, Vertex)
 face a b c d =
-  [ (Vertex a, Vertex b, Vertex c)
-  , (Vertex c, Vertex d, Vertex a)
+  let
+    u = Vec3.sub b a
+    v = Vec3.sub c a
+    normal = Vec3.normalize (Vec3.cross u v)
+  in
+  [ (Vertex a normal, Vertex b normal, Vertex c normal)
+  , (Vertex c normal, Vertex d normal, Vertex a normal)
   ]
+
 
 cube : Mesh Vertex
 cube =
   let
-    rft = vec3  1  1  1   -- right, front, top
-    lft = vec3 -1  1  1   -- left,  front, top
-    lbt = vec3 -1 -1  1
-    rbt = vec3  1 -1  1
-    rbb = vec3  1 -1 -1
-    rfb = vec3  1  1 -1
-    lfb = vec3 -1  1 -1
-    lbb = vec3 -1 -1 -1
+    rft = vec3  1  1  1 -- right, front, top
+    lft = vec3 -1  1  1 -- left, front, top
+    lbt = vec3 -1 -1  1 -- left, back, top
+    rbt = vec3  1 -1  1 -- right, back, top
+    rbb = vec3  1 -1 -1 -- right, back, bottom
+    rfb = vec3  1  1 -1 -- right, front, bottom
+    lfb = vec3 -1  1 -1 -- left, front, bottom
+    lbb = vec3 -1 -1 -1 -- left, back, bottom
   in
     WebGL.triangles <| List.concat <|
-      [ face rft rfb rbb rbt   -- right
-      , face rft rfb lfb lft   -- front
-      , face rft lft lbt rbt   -- top
-      , face rfb lfb lbb rbb   -- bottom
-      , face lft lfb lbb lbt   -- left
-      , face rbt rbb lbb lbt   -- back
+      [ face rft rbt rbb rfb -- right
+      , face lft rft rfb lfb -- front
+      , face lbt rbt rft lft -- top
+      , face rbb lbb lfb rfb -- bottom
+      , face lbt lft lfb lbb -- left
+      , face rbt lbt lbb rbb -- back
       ]
 
 type alias Uniforms =
@@ -62,7 +71,7 @@ type alias Uniforms =
   , model : Mat4
   }
 
-uniforms : Time -> Uniforms
+uniforms : Float -> Uniforms
 uniforms t =
   { projection = Mat4.makePerspective 45 1 0.01 100
   , view = Mat4.makeLookAt (vec3 0 0 5) (vec3 0 0 0) (vec3 0 1 0)
@@ -70,10 +79,10 @@ uniforms t =
   }
 
 type alias VertexShader =
-  Shader Vertex Uniforms { vViewPosition : Vec3 }
+  Shader Vertex Uniforms { vNormal : Vec3, vViewPosition : Vec3 }
 
 type alias FragmentShader =
-  Shader {} Uniforms { vViewPosition : Vec3 }
+  Shader {} Uniforms { vNormal : Vec3, vViewPosition : Vec3 }
 
 type alias Model =
   { time : Time
