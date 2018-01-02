@@ -1,7 +1,7 @@
-precision highp float;
+precision mediump float;
 
-#pragma glslify: inverse = require('glsl-inverse')
-#pragma glslify: transpose = require('glsl-transpose')
+#pragma glslify: inverse = require(glsl-inverse)
+#pragma glslify: transpose = require(glsl-transpose)
 
 attribute vec3 position;
 attribute vec3 normal;
@@ -10,7 +10,6 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
-varying vec3 vViewPosition;
 varying vec3 vNormal;
 
 void main() {
@@ -20,7 +19,6 @@ void main() {
 
   mat4 normalMatrix = transpose(inverse(modelViewMatrix));
 
-  vViewPosition = vec3(viewModelPosition);
   vNormal = vec3(normalMatrix * vec4(normal, 1.0));
 
   gl_Position = projection * viewModelPosition;

@@ -1,5 +1,7 @@
+precision mediump float;
+
 attribute vec2 position;
-uniform mediump float time;
+uniform float time;
 varying vec2 vpos;
 
 void main () {
