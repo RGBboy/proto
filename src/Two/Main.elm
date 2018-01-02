@@ -22,6 +22,7 @@ import Time exposing (Time)
 import WebGL exposing (Mesh, Shader)
 
 
+-- 3D Normal Shading
 
 -- MODEL
 

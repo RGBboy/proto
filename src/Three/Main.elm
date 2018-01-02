@@ -23,6 +23,8 @@ import WebGL exposing (Mesh, Shader)
 
 
 
+-- 3D Lambert Shading
+
 -- MODEL
 
 type alias Vertex =

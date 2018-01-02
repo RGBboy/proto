@@ -21,6 +21,8 @@ import WebGL exposing (Mesh, Shader)
 
 
 
+-- 2D Noise
+
 -- MODEL
 
 type alias Vertex =
