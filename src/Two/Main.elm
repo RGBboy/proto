@@ -1,4 +1,4 @@
-module Two.Main exposing
+module Main exposing
   ( Model
   , init
   , Msg
@@ -9,6 +9,7 @@ module Two.Main exposing
 
 import AnimationFrame
 import Color exposing (Color)
+import Components as C
 import Element as El
 import Element.Attributes as A
 import Html exposing (Html)
@@ -23,6 +24,17 @@ import WebGL exposing (Mesh, Shader)
 
 
 -- 3D Normal Shading
+
+main : Program Never Model Msg
+main =
+  Html.program
+    { init = init
+    , view = view
+    , subscriptions = subscriptions
+    , update = update
+    }
+
+
 
 -- MODEL
 
@@ -93,10 +105,10 @@ type alias Model =
 loadShaders : Cmd Msg
 loadShaders =
   let
-    fragmentRequest = Http.getString "./Two/fragment.glsl"
+    fragmentRequest = Http.getString "./fragment.glsl"
       |> Http.toTask
       |> Task.map (WebGL.unsafeShader)
-    vertexRequest = Http.getString "./Two/vertex.glsl"
+    vertexRequest = Http.getString "./vertex.glsl"
       |> Http.toTask
       |> Task.map (WebGL.unsafeShader)
   in
@@ -159,7 +171,10 @@ entity time (vertexShader, fragmentShader) =
           (uniforms (time / 5000))
       ]
 
-view : Model -> El.Element () variation msg
+view : Model -> Html msg
 view { time, shaders } =
-  Maybe.map (entity time) shaders
-    |> Maybe.withDefault El.empty
+  let
+    content = Maybe.map (entity time) shaders
+      |> Maybe.withDefault C.loading
+  in
+    C.layout <| C.item content
