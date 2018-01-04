@@ -13,9 +13,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@rgbboy/glsl-sdf-ops": "0.0.0",
     "glsl-diffuse-lambert": "^1.0.0",
     "glsl-inverse": "^1.0.0",
     "glsl-noise": "0.0.0",
+    "glsl-raytrace": "^1.0.0",
+    "glsl-sdf-primitives": "0.0.1",
+    "glsl-square-frame": "^1.0.1",
     "glsl-transpose": "^1.0.0"
   },
   "devDependencies": {
