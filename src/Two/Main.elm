@@ -3,7 +3,6 @@ module Main exposing (main)
 import AnimationFrame
 import Components as C
 import Element as El
-import Element.Attributes as A
 import Html exposing (Html)
 import Html.Attributes exposing (width, height)
 import Http
