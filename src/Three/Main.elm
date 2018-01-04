@@ -1,14 +1,6 @@
-module Main exposing
-  ( Model
-  , init
-  , Msg
-  , update
-  , subscriptions
-  , view
-  )
+module Main exposing (main)
 
 import AnimationFrame
-import Color exposing (Color)
 import Components as C
 import Element as El
 import Element.Attributes as A

@@ -1,11 +1,4 @@
-module Main exposing
-  ( Model
-  , init
-  , Msg
-  , update
-  , subscriptions
-  , view
-  )
+module Main exposing (main)
 
 import AnimationFrame
 import Components as C
