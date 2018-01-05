@@ -169,4 +169,4 @@ view { time, shaders } =
     content = Maybe.map (entity time) shaders
       |> Maybe.withDefault C.loading
   in
-    C.layout <| C.item content
+    C.layout <| C.item "#EEE" content

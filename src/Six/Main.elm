@@ -14,7 +14,7 @@ main : Html msg
 main =
   draw lines
     |> El.html
-    |> C.item
+    |> C.item "#EEE"
     |> C.layout
 
 type alias Point = (Float, Float)

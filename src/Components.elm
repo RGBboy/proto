@@ -19,23 +19,24 @@ stylesheet =
 layout : El.Element () variation msg -> Html msg
 layout child =
   El.layout stylesheet
-    <| El.column ()
-        [ A.spacingXY 0 32
+    <| El.row ()
+        [ A.spacingXY 64 0
         , A.center
+        , A.verticalCenter
         , A.width A.fill
-        , A.clipY
+        , A.height A.fill
         ]
         [ links
         , child
         ]
 
-item : El.Element () variation msg -> El.Element () variation msg
-item content =
+item : String -> El.Element () variation msg -> El.Element () variation msg
+item color content =
   El.el ()
       [ A.width (320 |> A.px)
       , A.height (320 |> A.px)
       , A.inlineStyle
-          [ ( "background", "#EEE" )
+          [ ( "background", color )
           ]
       ]
       content
