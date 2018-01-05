@@ -67,4 +67,6 @@ links =
         El.text "Four"
     , El.link "/Five" <|
         El.text "Five"
+    , El.link "/Six" <|
+        El.text "Six"
     ]
