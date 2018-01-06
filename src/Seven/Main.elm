@@ -84,10 +84,10 @@ uniforms t =
   }
 
 type alias VertexShader =
-  Shader Vertex Uniforms { vNormal : Vec3, vPosition : Vec3 }
+  Shader Vertex Uniforms { vPosition : Vec3 }
 
 type alias FragmentShader =
-  Shader {} Uniforms { vNormal : Vec3, vPosition : Vec3 }
+  Shader {} Uniforms { vPosition : Vec3 }
 
 type alias Model =
   { time : Time
