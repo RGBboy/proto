@@ -48,9 +48,11 @@ scale : Vec2 -> Mat3 -> Mat3
 scale vector (u, v, w) =
   let
     (x, y) = Vec2.toTuple vector
+    (a00, a01, a02) = Vec3.toTuple u
+    (a10, a11, a12) = Vec3.toTuple v
   in
-    ( Vec3.scale x u
-    , Vec3.scale y w
+    ( vec3 (x * a00) a01 a02
+    , vec3 a10 (y * a11) a12
     , w
     )
 
