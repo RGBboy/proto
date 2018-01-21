@@ -23,14 +23,17 @@ main =
 dimension : Vec2
 dimension = vec2 30 30
 
-divisions : number
-divisions = 32
+points : number
+points = 32
+
+segments : number
+segments = points - 1
 
 seed : Seed
 seed = Random.initialSeed 1313
 
 randomList : List Float
-randomList = Random.step (Random.list (divisions * divisions) <| Random.float 0 1) seed
+randomList = Random.step (Random.list (points * points) <| Random.float 0 1) seed
   |> Tuple.first
 
 transform : Mat3
@@ -40,15 +43,15 @@ transform =
 
 normalize : Float -> Float
 normalize value =
-  ((value / (toFloat divisions)) - 0.5) * 2
+  ((value / segments) - 0.5) * 2
 
 transformXY : Float -> (Int, Int) -> (Float, Float)
 transformXY random (intX, intY) =
   let
     x = toFloat intX
     y = toFloat intY
-    dx = (sin (x * pi / divisions))
-    dy = (sin (y * pi / divisions))
+    dx = (sin (x * pi / segments))
+    dy = (sin (y * pi / segments))
   in
     ( x - (dx * dy * random) |> normalize
     , y - (dx * dy * 0.5 * (sin (2 * pi * random))) |> normalize
@@ -59,8 +62,8 @@ data =
   randomList
     |> List.indexedMap (\index random ->
         let
-          x = index % divisions
-          y = (index - x) // divisions
+          x = index % points
+          y = (index - x) // points
         in
           (x, y, random)
       )
