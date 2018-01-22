@@ -11,7 +11,7 @@ import List.Extra
 
 
 
--- Random Grid
+-- Random Lines
 
 main : Html msg
 main =
