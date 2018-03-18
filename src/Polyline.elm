@@ -13,6 +13,14 @@ import Svg.Attributes as A
 
 
 
+-- To Do:
+--
+-- intersect : Shape -> List Polyline -> (List Polyline, List Polyline)
+-- where left is the lines inside the shape, right is the lines outside
+
+-- add : Shape -> Shape -> Shape
+-- eg. square 1 1 |> add (circle 1 1)
+
 type alias Polyline = List Vec2
 
 transform : Mat3 -> Polyline -> Polyline
