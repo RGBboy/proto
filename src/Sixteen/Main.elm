@@ -5,7 +5,7 @@ import Element as El
 import Html exposing (Html)
 import Math.Matrix3 as Mat3 exposing (Mat3)
 import Math.Vector2 as Vec2 exposing (vec2, Vec2)
-import Polyline as Polyline exposing (Polyline)
+import Polyline exposing (Polyline)
 import List.Extra
 
 

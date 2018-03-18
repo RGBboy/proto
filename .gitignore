@@ -1,4 +1,4 @@
 elm-stuff
 node_modules
-static
+static/*
 !static/bunny.json
