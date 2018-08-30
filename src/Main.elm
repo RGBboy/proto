@@ -7,6 +7,6 @@ import Html exposing (Html)
 import Style exposing (StyleSheet)
 
 
-
 main : Html msg
-main = C.layout El.empty
+main =
+    C.layout El.empty
